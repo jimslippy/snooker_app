@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snooker Shot Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎱 Snooker Shot Tracker</h1>
+            <p>Track every shot, improve your game</p>
+        </div>
+
+        <div class="section">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('setup', this)">Game Setup</div>
+                <div class="tab" onclick="switchTab('play', this)" id="playTabButton" style="display: none;">Play Game</div>
+                <div class="tab" onclick="switchTab('players', this)">Manage Players</div>
+                <div class="tab" onclick="switchTab('history', this)">Match History</div>
+            </div>
+
+            <!-- Game Setup Tab -->
+            <div id="setupTab" class="tab-content active">
+                <h2>Start New Game</h2>
+                <div class="form-group">
+                    <label for="player1">Player 1:</label>
+                    <select id="player1">
+                        <option value="">Loading players...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="player2">Player 2 (Optional for Practice Mode):</label>
+                    <select id="player2">
+                        <option value="">Practice Mode (Single Player)</option>
+                    </select>
+                </div>
+                <button class="btn success" onclick="startGame()">🚀 Start Game</button>
+                <div id="setupError"></div>
+            </div>
+
+            <!-- Play Game Tab -->
+            <div id="playTab" class="tab-content">
+                <div id="gameArea" style="display: none;">
+                    <div class="game-info">
+                        <div class="player-card" id="player1Card">
+                            <div class="player-name" id="player1Name">Player 1</div>
+                            <div class="player-score" id="player1Score">0</div>
+                            <div class="shot-stats">
+                                <small>Good: <span id="p1Good">0</span> | OK: <span id="p1Ok">0</span> | Bad: <span id="p1Bad">0</span></small>
+                            </div>
+                        </div>
+                        <div class="player-card" id="player2Card" style="display: none;">
+                            <div class="player-name" id="player2Name">Player 2</div>
+                            <div class="player-score" id="player2Score">0</div>
+                            <div class="shot-stats">
+                                <small>Good: <span id="p2Good">0</span> | OK: <span id="p2Ok">0</span> | Bad: <span id="p2Bad">0</span></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>Record Shot for <span id="currentPlayer">Player 1</span></h3>
+                        <div class="shot-flow">
+                            
+                            <!-- Step 1: Shot Type -->
+                            <div class="shot-step active" id="step1">
+                                <div class="step-title">What type of shot?</div>
+                                <div class="shot-type-buttons">
+                                    <button class="shot-type-btn pot" onclick="selectShotType('pot')">
+                                        🎯<br>POT
+                                    </button>
+                                    <button class="shot-type-btn safety" onclick="selectShotType('safety')">
+                                        🛡️<br>SAFETY
+                                    </button>
+                                    <button class="shot-type-btn snooker" onclick="selectShotType('snooker')">
+                                        🎱<br>SNOOKER
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Ball Color (only for pots) -->
+                            <div class="shot-step" id="step2">
+                                <div class="step-title">Which ball?</div>
+                                <div class="current-selection">
+                                    <h4>Shot Type:</h4>
+                                    <span class="selection-item" id="selectedShotType">Pot</span>
+                                </div>
+                                <div class="ball-buttons">
+                                    <button class="ball-btn red" onclick="selectBall('red')">RED<br>1</button>
+                                    <button class="ball-btn yellow" onclick="selectBall('yellow')">YELLOW<br>2</button>
+                                    <button class="ball-btn green" onclick="selectBall('green')">GREEN<br>3</button>
+                                    <button class="ball-btn brown" onclick="selectBall('brown')">BROWN<br>4</button>
+                                    <button class="ball-btn blue" onclick="selectBall('blue')">BLUE<br>5</button>
+                                    <button class="ball-btn pink" onclick="selectBall('pink')">PINK<br>6</button>
+                                    <button class="ball-btn black" onclick="selectBall('black')">BLACK<br>7</button>
+                                </div>
+                                <div class="flow-controls">
+                                    <button class="flow-btn back" onclick="goBackToStep(1)">← Back</button>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Result -->
+                            <div class="shot-step" id="step3">
+                                <div class="step-title">How was the shot?</div>
+                                <div class="current-selection">
+                                    <h4>Your Shot:</h4>
+                                    <span class="selection-item" id="selectedShotDisplay">Pot Red</span>
+                                </div>
+                                <div class="result-buttons">
+                                    <button class="result-btn good" onclick="selectResult('good')">
+                                        ✓<br>GOOD<br><small>Successful outcome</small>
+                                    </button>
+                                    <button class="result-btn ok" onclick="selectResult('ok')">
+                                        ~<br>OK<br><small>Decent attempt</small>
+                                    </button>
+                                    <button class="result-btn bad" onclick="selectResult('bad')">
+                                        ✗<br>BAD<br><small>Poor execution</small>
+                                    </button>
+                                </div>
+                                <div class="flow-controls">
+                                    <button class="flow-btn back" onclick="goBackToStep(2)">← Back</button>
+                                </div>
+                            </div>
+
+                            <!-- Step 4: Confirm -->
+                            <div class="shot-step" id="step4">
+                                <div class="step-title">Confirm Shot</div>
+                                <div class="current-selection">
+                                    <h4>Shot Summary:</h4>
+                                    <div id="shotSummary">
+                                        <span class="selection-item" id="finalShotType">Pot</span>
+                                        <span class="selection-item" id="finalBall">Red (1)</span>
+                                        <span class="selection-item" id="finalResult">Good</span>
+                                    </div>
+                                </div>
+                                <div class="flow-controls">
+                                    <button class="flow-btn back" onclick="goBackToStep(3)">← Back</button>
+                                    <button class="flow-btn confirm" onclick="confirmQuickShot()">✅ Confirm Shot</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>Game Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number" id="totalShots">0</div>
+                                <div class="stat-label">Total Shots</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="goodPercentage">0%</div>
+                                <div class="stat-label">Good Shots</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="okPercentage">0%</div>
+                                <div class="stat-label">OK Shots</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="badPercentage">0%</div>
+                                <div class="stat-label">Bad Shots</div>
+                            </div>
+                        </div>
+
+                        <div class="recent-shots">
+                            <h4>Recent Shots</h4>
+                            <div id="shotHistory">
+                                <div class="loading">No shots recorded yet...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn" onclick="switchPlayer()" id="switchPlayerBtn">🔄 Switch Player</button>
+                        <button class="btn danger" onclick="endGame()">🏁 End Game</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Players Tab -->
+            <div id="playersTab" class="tab-content">
+                <h2>Manage Players</h2>
+                <button class="btn" onclick="toggleAddPlayer()">+ Add New Player</button>
+                
+                <div id="addPlayerForm" class="add-player-form">
+                    <div class="form-group">
+                        <label for="newPlayerName">Player Name:</label>
+                        <input type="text" id="newPlayerName" placeholder="Enter player name">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPlayerEmail">Email (Optional):</label>
+                        <input type="email" id="newPlayerEmail" placeholder="Enter email address">
+                    </div>
+                    <button class="btn success" onclick="addNewPlayer()">Add Player</button>
+                    <button class="btn" onclick="toggleAddPlayer()">Cancel</button>
+                    <div id="addPlayerResult"></div>
+                </div>
+
+                <div id="playersList" class="section">
+                    <h3>Current Players</h3>
+                    <div id="playersDisplay" class="loading">Loading players...</div>
+                </div>
+            </div>
+
+            <!-- Match History Tab -->
+            <div id="historyTab" class="tab-content">
+                <h2>Match History & Statistics</h2>
+                
+                <div class="section">
+                    <h3>Player Statistics</h3>
+                    <div id="playerStatsTable" class="loading">Loading statistics...</div>
+                </div>
+                
+                <div class="section">
+                    <h3>Recent Games</h3>
+                    <button class="btn" onclick="loadMatchHistory()">🔄 Refresh</button>
+                    <div id="matchHistoryTable" class="loading">Loading match history...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
