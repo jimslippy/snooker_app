@@ -573,7 +573,7 @@ async function loadMatchHistory() {
         document.getElementById('matchHistoryTable').innerHTML = '<div class="loading">Loading match history...</div>';
         document.getElementById('playerStatsTable').innerHTML = '<div class="loading">Loading statistics...</div>';
         
-        const response = await fetch('api/simple_match_history.php'); // CHANGED: Use simple version
+        const response = await fetch('api/get_match_history.php');
         const text = await response.text();
         
         if (!text || text.trim() === '') {
